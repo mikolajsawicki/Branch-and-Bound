@@ -96,14 +96,20 @@ int Graph::bruteForceTSP(int start_node)
 	road.push_back(start_node);
 
 	std::vector<int> best_road;
+	int best_road_weight = -1;
 
 	// node_visited[i] contains true, if the i node has been visited, or false if it hasn't
-	std::vector<bool> node_visited(nodesCount, false);
-	node_visited[start_node] = true;
+	bool* node_visited = new bool[nodesCount];
 
-	int best_road_weight = -1;
+	for(int i = 0; i < nodesCount; i++)
+		node_visited[i] = false;
+
+	node_visited[start_node] = true;
+	//
 	
-	checkAllRoads(start_node, road, node_visited, best_road, &best_road_weight);
+	checkAllRoads(road, node_visited, best_road, &best_road_weight);
+
+	delete[] node_visited;
 
 	return best_road_weight;
 }
@@ -120,10 +126,29 @@ int Graph::getRoadWeight(std::vector<int> road)
 	return weight;
 }
 
-void Graph::checkAllRoads(int start_node, std::vector<int> road, std::vector<bool> node_visited, std::vector<int> best_road, int *best_road_weight)
+// Let's consider the tree, which contains all possible paths in our graph.
+// This function is based on the recursive deep search of such a tree.
+// The road vector must contain the start node number.
+void Graph::checkAllRoads(std::vector<int> road, bool* node_visited, std::vector<int> best_road, int *best_road_weight)
 {
-	if (road.size() == nodesCount) {
-		road.push_back(start_node);
+	if (road.size() < nodesCount)
+	{
+		for (int i = 0; i < nodesCount; i++)
+		{
+			if (!node_visited[i])
+			{
+				road.push_back(i);
+				node_visited[i] = true;
+
+				checkAllRoads(road, node_visited, best_road, best_road_weight);
+
+				node_visited[i] = false;
+				road.pop_back();
+			}
+		}
+	}
+	else if (adjacencyMatrix[road.back()][road.front()] > 0) {
+		road.push_back(road.front());
 		
 		int road_weight = getRoadWeight(road);
 
@@ -136,19 +161,5 @@ void Graph::checkAllRoads(int start_node, std::vector<int> road, std::vector<boo
 		road.pop_back();
 
 		return;
-	}
-
-	for (int i = 0; i < nodesCount; i++)
-	{
-		if (!node_visited[i])
-		{
-			road.push_back(i);
-			node_visited[i] = true;
-
-			checkAllRoads(start_node, road, node_visited, best_road, best_road_weight);
-
-			node_visited[i] = false;
-			road.pop_back();
-		}
 	}
 }

@@ -13,7 +13,7 @@ public:
 	std::string toString();
 	bool empty();
 	int bruteForceTSP(int start_node);
-	void checkAllRoads(int start_node, std::vector<int> road, std::vector<bool> node_visited, std::vector<int> best_road, int* best_road_weight);
+	void checkAllRoads(std::vector<int> road, bool* node_visited, std::vector<int> best_road, int* best_road_weight);
 	int getRoadWeight(std::vector<int> road);
 
 private:
