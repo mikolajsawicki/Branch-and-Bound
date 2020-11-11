@@ -92,11 +92,11 @@ std::string Graph::toString()
 
 int Graph::bruteForceTSP(int start_node)
 {
-	std::vector<int> road;
-	road.push_back(start_node);
+	std::vector<int> path;
+	path.push_back(start_node);
 
-	std::vector<int> best_road;
-	int best_road_weight = -1;
+	std::vector<int> best_path;
+	int best_path_weight = -1;
 
 	// node_visited[i] contains true, if the i node has been visited, or false if it hasn't
 	bool* node_visited = new bool[nodesCount];
@@ -107,20 +107,20 @@ int Graph::bruteForceTSP(int start_node)
 	node_visited[start_node] = true;
 	//
 	
-	checkAllRoads(road, node_visited, best_road, &best_road_weight);
+	checkAllPaths(path, node_visited, best_path, &best_path_weight);
 
 	delete[] node_visited;
 
-	return best_road_weight;
+	return best_path_weight;
 }
 
-int Graph::getRoadWeight(std::vector<int> road)
+int Graph::getPathWeight(std::vector<int> path)
 {
 	int weight = 0;
 
-	for (int i = 0; i < road.size() - 1; i++)
+	for (int i = 0; i < path.size() - 1; i++)
 	{
-		weight += adjacencyMatrix[road[i]][road[i + 1]];
+		weight += adjacencyMatrix[path[i]][path[i + 1]];
 	}
 
 	return weight;
@@ -128,37 +128,37 @@ int Graph::getRoadWeight(std::vector<int> road)
 
 // Let's consider the tree, which contains all possible paths in our graph.
 // This function is based on the recursive deep search of such a tree.
-// The road vector must contain the start node number.
-void Graph::checkAllRoads(std::vector<int> road, bool* node_visited, std::vector<int> best_road, int *best_road_weight)
+// The path vector must contain the start node number.
+void Graph::checkAllPaths(std::vector<int> path, bool* node_visited, std::vector<int> best_path, int *best_path_weight)
 {
-	if (road.size() < nodesCount)
+	if (path.size() < nodesCount)
 	{
 		for (int i = 0; i < nodesCount; i++)
 		{
 			if (!node_visited[i])
 			{
-				road.push_back(i);
+				path.push_back(i);
 				node_visited[i] = true;
 
-				checkAllRoads(road, node_visited, best_road, best_road_weight);
+				checkAllPaths(path, node_visited, best_path, best_path_weight);
 
 				node_visited[i] = false;
-				road.pop_back();
+				path.pop_back();
 			}
 		}
 	}
-	else if (adjacencyMatrix[road.back()][road.front()] > 0) {
-		road.push_back(road.front());
+	else if (adjacencyMatrix[path.back()][path.front()] > 0) {
+		path.push_back(path.front());
 		
-		int road_weight = getRoadWeight(road);
+		int path_weight = getPathWeight(path);
 
-		if (*best_road_weight == -1 || road_weight < *best_road_weight)
+		if (*best_path_weight == -1 || path_weight < *best_path_weight)
 		{
-			best_road = road;
-			*best_road_weight = road_weight;
+			best_path = path;
+			*best_path_weight = path_weight;
 		}
 
-		road.pop_back();
+		path.pop_back();
 
 		return;
 	}

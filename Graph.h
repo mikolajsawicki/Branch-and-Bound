@@ -13,8 +13,8 @@ public:
 	std::string toString();
 	bool empty();
 	int bruteForceTSP(int start_node);
-	void checkAllRoads(std::vector<int> road, bool* node_visited, std::vector<int> best_road, int* best_road_weight);
-	int getRoadWeight(std::vector<int> road);
+	void checkAllPaths(std::vector<int> path, bool* node_visited, std::vector<int> best_path, int* best_path_weight);
+	int getPathWeight(std::vector<int> path);
 
 private:
 	int** adjacencyMatrix;
