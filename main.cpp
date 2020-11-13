@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <random>
+#include "TSPSolver.h"
 
 void print_menu()
 {
@@ -114,9 +115,13 @@ int main()
 			break;
 
 		case 4:
-			printf("Best path weight: %d", graph.bruteForceTSP(start_node_prompt()));
+		{
+			TSPSolver solver(&graph, start_node_prompt());
+			solver.solveBruteForce();
+			printf("Best path weight: %d", solver.getBestPathWeight());
 
 			break;
+		}
 
 		case 5:
 			printf("Best path weight: %d", graph.branchAndBoundTSP(start_node_prompt()));
