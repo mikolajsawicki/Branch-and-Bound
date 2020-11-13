@@ -1,5 +1,6 @@
 #include "Graph.h"
 #include <vector>
+#include <algorithm>
 
 Graph::Graph(int nodes_count)
 {
@@ -92,74 +93,85 @@ std::string Graph::toString()
 
 int Graph::bruteForceTSP(int start_node)
 {
-	std::vector<int> path;
-	path.push_back(start_node);
+	int* path = new int[nodesCount + 1];
 
-	std::vector<int> best_path;
+	path[0] = start_node;
+	path[nodesCount] = start_node;
+
+	for (int val = 0, i = 1; i < nodesCount; val++)
+	{
+		if (val != start_node)
+		{
+			path[i] = val;
+			i++;
+		}
+	}
+
+	int* best_path = new int[nodesCount + 1];
 	int best_path_weight = -1;
 
-	// node_visited[i] contains true, if the i node has been visited, or false if it hasn't
-	bool* node_visited = new bool[nodesCount];
+	int weight;
 
-	for(int i = 0; i < nodesCount; i++)
-		node_visited[i] = false;
+	do
+	{
+		weight = 0;
 
-	node_visited[start_node] = true;
-	//
-	
-	checkAllPaths(path, node_visited, best_path, &best_path_weight);
+		for (int i = 0; i < nodesCount; i++)
+		{
+			weight += adjacencyMatrix[path[i]][path[i + 1]];
+		}
 
-	delete[] node_visited;
+		if (best_path_weight == -1 || weight < best_path_weight)
+		{
+			std::copy(path, path + nodesCount + 1, best_path);
+			best_path_weight = weight;
+		}
+	} while (std::next_permutation(path + 1, path + nodesCount));
+
+	delete[] path;
+	delete[] best_path;
 
 	return best_path_weight;
 }
 
-int Graph::getPathWeight(std::vector<int> path)
+/*
+int Graph::branchAndBoundTSP(int start_node)
 {
-	int weight = 0;
+	int* path = new int[nodesCount + 1];
 
-	for (int i = 0; i < path.size() - 1; i++)
+	path[0] = start_node;
+	path[nodesCount] = start_node;
+
+	for (int val = 0, i = 1; i < nodesCount; val++)
 	{
-		weight += adjacencyMatrix[path[i]][path[i + 1]];
+		if (val != start_node)
+		{
+			path[i] = val;
+			i++;
+		}
 	}
 
-	return weight;
-}
+	int* best_path = new int[nodesCount + 1];
+	int best_path_weight = -1;
 
-// Let's consider the tree, which contains all possible paths in our graph.
-// This function is based on the recursive deep search of such a tree.
-// The path vector must contain the start node number.
-void Graph::checkAllPaths(std::vector<int> path, bool* node_visited, std::vector<int> best_path, int *best_path_weight)
-{
-	if (path.size() < nodesCount)
+	int weight;
+
+	do
 	{
+		weight = 0;
+
 		for (int i = 0; i < nodesCount; i++)
 		{
-			if (!node_visited[i])
-			{
-				path.push_back(i);
-				node_visited[i] = true;
-
-				checkAllPaths(path, node_visited, best_path, best_path_weight);
-
-				node_visited[i] = false;
-				path.pop_back();
-			}
+			weight += adjacencyMatrix[path[i]][path[i + 1]];
 		}
-	}
-	else if (adjacencyMatrix[path.back()][path.front()] > 0) {
-		path.push_back(path.front());
-		
-		int path_weight = getPathWeight(path);
 
-		if (*best_path_weight == -1 || path_weight < *best_path_weight)
+		if (best_path_weight == -1 || weight < best_path_weight)
 		{
-			best_path = path;
-			*best_path_weight = path_weight;
+			std::copy(path, path + nodesCount + 1, best_path);
+			best_path_weight = weight;
 		}
+	} while (std::next_permutation(path + 1, path + nodesCount));
 
-		path.pop_back();
-
-		return;
-	}
+	return best_path_weight;
 }
+*/
