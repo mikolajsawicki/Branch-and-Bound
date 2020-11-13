@@ -10,7 +10,8 @@ void print_menu()
 			"1. Load data from file.\n"
 			"2. Generate random graph.\n"
 			"3. Display the recently loaded/generated data.\n"
-			"4. Find TSP solution using the brute force algorithm.\n");
+			"4. Find TSP solution using the brute force algorithm.\n"
+			"5. Find TSP solution using the branch and bound algorithm.\n");
 }
 
 bool file_load(Graph* graph)
@@ -54,6 +55,15 @@ void generate_random_graph(Graph* graph, int min, int max)
 	for (int i = 0; i < graph->getNodesCount(); i++)
 		for (int j = 0; j < graph->getNodesCount(); j++)
 			adjacency_matrix[i][j] = dist(gen);
+}
+
+int start_node_prompt()
+{
+	int start_node;
+	printf("Enter the start (and end) node: ");
+	std::cin >> start_node;
+
+	return start_node;
 }
 
 int main()
@@ -104,11 +114,12 @@ int main()
 			break;
 
 		case 4:
-			int start_node;
-			printf("Enter the start (and end) node: ");
-			std::cin >> start_node;
+			printf("Best path weight: %d", graph.bruteForceTSP(start_node_prompt()));
 
-			printf("Best path weight: %d", graph.bruteForceTSP(start_node));
+			break;
+
+		case 5:
+			printf("Best path weight: %d", graph.branchAndBoundTSP(start_node_prompt()));
 
 			break;
 		}
