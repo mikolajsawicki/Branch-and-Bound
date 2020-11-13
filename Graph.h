@@ -7,7 +7,6 @@ class Graph
 private:
 	int** adjacencyMatrix;
 	int nodesCount;
-	GraphNode* nodes;
 	
 	void createAdjacencyMatrix();
 	void deleteAdjacencyMatrix();
