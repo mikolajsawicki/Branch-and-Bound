@@ -36,11 +36,11 @@ bool file_load(Graph* graph)
 
 	graph->reset(nodes_count);
 
-	int** adjacency_matrix = graph->getAdjacencyMatrix();
+	SquareMatrix* matrix = graph->getAdjacencyMatrix();
 
 	for (int i = 0; i < nodes_count; i++)
 		for (int j = 0; j < nodes_count; j++)
-			file >> adjacency_matrix[i][j];
+			file >> (*matrix)[i][j];
 
 	return true;
 }
@@ -51,11 +51,11 @@ void generate_random_graph(Graph* graph, int min, int max)
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<> dist(min, max);
 
-	int** adjacency_matrix = graph->getAdjacencyMatrix();
+	SquareMatrix* matrix = graph->getAdjacencyMatrix();
 
 	for (int i = 0; i < graph->getNodesCount(); i++)
 		for (int j = 0; j < graph->getNodesCount(); j++)
-			adjacency_matrix[i][j] = dist(gen);
+			*matrix[i][j] = dist(gen);
 }
 
 int start_node_prompt()
@@ -124,9 +124,13 @@ int main()
 		}
 
 		case 5:
-			printf("Best path weight: %d", graph.branchAndBoundTSP(start_node_prompt()));
+		{
+			TSPSolver solver(&graph, start_node_prompt());
+			solver.solveBranchAndBound();
+			printf("Best path weight: %d", solver.getBestPathWeight());
 
 			break;
+		}
 		}
 	} while (opt != 0);
 }

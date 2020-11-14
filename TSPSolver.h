@@ -1,21 +1,30 @@
 #pragma once
 #include "Graph.h"
 
+struct PathNode
+{
+	int index;
+	int indexInMatrix;
+	bool visited;
+	int** reducedMatrix;
+};
+
 class TSPSolver
 {
 private:
 	Graph* graph;
 	int startNode;
-	int* consideredPath;
+	
 	int* bestPath;
 	int bestPathWeight;
 
-	void consideredPathInit();
+	void setFirstPermutation(int* considered_path);
 
 public:
 	TSPSolver(Graph* graph, int node);
 	~TSPSolver();
 	void solveBruteForce();
+	void solveBranchAndBound();
 	int getBestPathWeight();
 };
 
