@@ -55,7 +55,7 @@ void generate_random_graph(Graph* graph, int min, int max)
 
 	for (int i = 0; i < graph->getNodesCount(); i++)
 		for (int j = 0; j < graph->getNodesCount(); j++)
-			*matrix[i][j] = dist(gen);
+			(*matrix)[i][j] = dist(gen);
 }
 
 int start_node_prompt()

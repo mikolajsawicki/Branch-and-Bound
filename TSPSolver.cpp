@@ -1,7 +1,6 @@
 #include "TSPSolver.h"
 #include "algorithm"
 #include "SquareMatrix.h"
-#include "PathNode.h"
 
 #ifndef INT_MAX
 #define INT_MAX 2147483647
@@ -154,34 +153,34 @@ int TSPSolver::startBound(int** orders)
 	return bound;
 }
 
-int TSPSolver::firstMin(int i)
+int TSPSolver::firstMin(int row)
 {
 	SquareMatrix* matrix = graph->getAdjacencyMatrix();
 
 	int min = INT_MAX;
 	for (int k = 0; k < graph->getNodesCount(); k++)
-		if ((*matrix)[i][k] < min && i != k)
-			min = (*matrix)[i][k];
+		if ((*matrix)[row][k] < min && row != k)
+			min = (*matrix)[row][k];
 	return min;
 }
 
-int TSPSolver::secondMin(int i)
+int TSPSolver::secondMin(int row)
 {
 	int first = INT_MAX, second = INT_MAX;
 	SquareMatrix* matrix = graph->getAdjacencyMatrix();
 	for (int j = 0; j < graph->getNodesCount(); j++)
 	{
-		if (i == j)
+		if (row == j)
 			continue;
 
-		if ((*matrix)[i][j] <= first)
+		if ((*matrix)[row][j] <= first)
 		{
 			second = first;
-			first = (*matrix)[i][j];
+			first = (*matrix)[row][j];
 		}
-		else if ((*matrix)[i][j] <= second &&
-			(*matrix)[i][j] != first)
-			second = (*matrix)[i][j];
+		else if ((*matrix)[row][j] <= second &&
+			(*matrix)[row][j] != first)
+			second = (*matrix)[row][j];
 	}
 	return second;
 }
@@ -202,14 +201,8 @@ void TSPSolver::branchAndBoundRecursive(int level, int* path, int weight, int bo
 		return;
 	}
 
-
-	// for any other level iterate for all vertices to 
-	// build the search space tree recursively 
 	for (int i = 0; i < graph->getNodesCount(); i++)
 	{
-		// Consider next vertex if it is not same (diagonal 
-		// entry in adjacency matrix and not visited 
-		// already) 
 		if ((*matrix)[path[level - 1]][i] > 0 && visited[i] == false)
 		{
 			int old_bound = bound;
@@ -233,6 +226,9 @@ void TSPSolver::branchAndBoundRecursive(int level, int* path, int weight, int bo
 			bound = old_bound;
 
 			memset(visited, false, sizeof(visited));
+
+			for (int i = 0; i < graph->getNodesCount(); i++)
+				visited[i] = false;
 
 			for (int j = 0; j <= level - 1; j++)
 				visited[path[j]] = true;

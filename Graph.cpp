@@ -9,27 +9,30 @@ Graph::Graph(int nodes_count)
 
 	nodesCount = nodes_count;
 
-	createAdjacencyMatrix();
+	adjacencyMatrix = new SquareMatrix(nodes_count);
 }
 
 Graph::Graph()
 {
 	nodesCount = 0;
-	createAdjacencyMatrix();
+	adjacencyMatrix = new SquareMatrix(0);
 }
 
 Graph::~Graph()
 {
-	deleteAdjacencyMatrix();
+	delete adjacencyMatrix;
 }
 
 bool Graph::reset(int new_nodes_count)
 {
-	deleteAdjacencyMatrix();
+	if (new_nodes_count < 0)
+		return false;
+
+	delete adjacencyMatrix;
 
 	nodesCount = new_nodes_count;
 
-	createAdjacencyMatrix();
+	adjacencyMatrix = new SquareMatrix(new_nodes_count);
 
 	return true;
 }
@@ -39,28 +42,9 @@ int Graph::getNodesCount()
 	return nodesCount;
 }
 
-int** Graph::getAdjacencyMatrix()
+SquareMatrix* Graph::getAdjacencyMatrix()
 {
 	return adjacencyMatrix;
-}
-
-void Graph::createAdjacencyMatrix()
-{
-	adjacencyMatrix = new int* [nodesCount];
-
-	for (int i = 0; i < nodesCount; i++)
-		adjacencyMatrix[i] = new int[nodesCount];
-}
-
-void Graph::deleteAdjacencyMatrix()
-{
-	if (nodesCount > 0)
-	{
-		for (int i = 0; i < nodesCount; i++)
-			delete[] adjacencyMatrix[i];
-	}
-
-	delete[] adjacencyMatrix;
 }
 
 bool Graph::empty()
@@ -83,7 +67,7 @@ std::string Graph::toString()
 	for (int i = 0; i < nodesCount; i++)
 	{
 		for (int j = 0; j < nodesCount; j++)
-			result += std::to_string(adjacencyMatrix[i][j]) + " ";
+			result += std::to_string((*adjacencyMatrix)[i][j]) + " ";
 
 		result += "\n";
 	}
@@ -93,5 +77,5 @@ std::string Graph::toString()
 
 int Graph::getWeight(int from, int to)
 {
-	return adjacencyMatrix[from][to];
+	return (*adjacencyMatrix)[from][to];
 }
