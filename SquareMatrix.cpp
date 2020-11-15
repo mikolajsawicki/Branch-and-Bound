@@ -9,13 +9,11 @@ SquareMatrix::SquareMatrix(int size)
 
 SquareMatrix::SquareMatrix(const SquareMatrix &matrix)
 {
-	int size = matrix.size;
+	init(matrix.size);
 
-	init(size);
-
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < matrix.size; i++)
 	{
-		std::copy(matrix.ptr[i], matrix.ptr[i] + size, ptr[i]);
+		std::copy(matrix.ptr[i], matrix.ptr[i] + matrix.size, ptr[i]);
 	}
 }
 
@@ -39,9 +37,14 @@ SquareMatrix::~SquareMatrix()
 	delete[] ptr;
 }
 
-int* SquareMatrix::operator[](int index)
+int* SquareMatrix::operator [] (int index)
 {
 	return ptr[index];
+}
+
+SquareMatrix& SquareMatrix::operator = (const SquareMatrix& t)
+{
+	return *this;
 }
 
 int SquareMatrix::getSize()

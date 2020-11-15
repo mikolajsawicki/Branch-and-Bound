@@ -11,6 +11,7 @@ public:
 	SquareMatrix(const SquareMatrix &matrix);
 	~SquareMatrix();
 	int* operator[](int);
+	SquareMatrix& operator = (const SquareMatrix& t);
 	int getSize();
 };
 
