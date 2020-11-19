@@ -10,8 +10,21 @@
 #define LONG_LONG_MAX 9223372036854775807;
 #endif
 
-
 using namespace std::chrono;
+
+enum Option
+{
+	opt_quit = 0,
+	opt_file = 1,
+	opt_random = 2,
+	opt_display = 3,
+	opt_brute_perm = 4,
+	opt_brute_tree = 5,
+	opt_branch_and_bound = 6,
+	opt_test_brute_perm = 7,
+	opt_test_brute_tree = 8,
+	opt_test_branch_and_bound = 9
+};
 
 void print_menu()
 {
@@ -90,7 +103,7 @@ void performance_test(int opt)
 
 	int* test_n_values = new int[7];
 
-	if (opt == 9)
+	if (opt == opt_test_branch_and_bound)
 	{
 		int n_values[7] = { 4, 7, 9, 11, 18, 22, 24 };
 		std::copy(n_values, n_values + 7, test_n_values);
@@ -118,16 +131,16 @@ void performance_test(int opt)
 
 			switch (opt)
 			{
-			case 7:
+			case opt_test_brute_perm:
 				start = high_resolution_clock::now();
 				solver.solveBruteForce();
 				stop = high_resolution_clock::now();
 				break;
-			case 8:
+			case opt_test_brute_tree:
 				start = high_resolution_clock::now();
 				solver.solveBruteForceSearchTree();
 				stop = high_resolution_clock::now();
-			case 9:
+			case opt_test_branch_and_bound:
 				start = high_resolution_clock::now();
 				solver.solveBranchAndBound();
 				stop = high_resolution_clock::now();
@@ -158,6 +171,29 @@ void print_path(int* path, int n)
 	printf("%d", path[n - 1]);
 }
 
+void solve(Graph &graph, int opt)
+{
+	int n = start_node_prompt();
+	TSPSolver solver(&graph, n);
+
+	switch (opt)
+	{
+	case opt_brute_perm:
+		solver.solveBruteForce();
+		break;
+	case opt_brute_tree:
+		solver.solveBruteForceSearchTree();
+		break;
+	case opt_branch_and_bound:
+		solver.solveBranchAndBound();
+		break;
+	}
+
+	int* best_path = solver.getBestPath();
+	printf("Best path weight: %d\n", solver.getBestPathWeight());
+	print_path(best_path, graph.getNodesCount());
+}
+
 int main()
 {	
 	Graph graph;
@@ -171,7 +207,7 @@ int main()
 	
 		switch (opt)
 		{
-		case 1:
+		case opt_file:
 			if (file_load(&graph))
 				printf("The data has been loaded.\n");
 			else
@@ -179,7 +215,7 @@ int main()
 
 			break;
 
-		case 2:
+		case opt_random:
 			int size, min, max;
 			printf("Set the graph nodes count: ");
 			std::cin >> size;
@@ -196,7 +232,7 @@ int main()
 			printf("The random graph has been generated.\n");
 			break;
 
-		case 3:
+		case opt_display:
 			if (graph.empty()) {
 				printf("Error: There's no graph to display.\n");
 				break;
@@ -205,52 +241,37 @@ int main()
 			std::cout << graph.toString();
 			break;
 
-		case 4:
+		case opt_brute_perm:
 		{
-			int n = start_node_prompt();
-			TSPSolver solver(&graph, n);
-			solver.solveBruteForce();
-			int* best_path = solver.getBestPath();
-			printf("Best path weight: %d\n", solver.getBestPathWeight());
-			print_path(best_path, graph.getNodesCount());
+			solve(graph, opt);
 
 			break;
 		}
-		case 5:
+		case opt_brute_tree:
 		{
-			int n = start_node_prompt();
-			TSPSolver solver(&graph, n);
-			solver.solveBruteForceSearchTree();
-			int* best_path = solver.getBestPath();
-			printf("Best path weight: %d\n", solver.getBestPathWeight());
-			print_path(best_path, graph.getNodesCount());
+			solve(graph, opt);
 
 			break;
 		}
-		case 6:
+		case opt_branch_and_bound:
 		{
-			int n = start_node_prompt();
-			TSPSolver solver(&graph, n);
-			solver.solveBranchAndBound();
-			int* best_path = solver.getBestPath();
-			printf("Best path weight: %d\n", solver.getBestPathWeight());
-			print_path(best_path, graph.getNodesCount());
+			solve(graph, opt);
 
 			break;
 		}
-		case 7:
+		case opt_test_brute_perm:
 		{
 			performance_test(opt);
 
 			break;
 		}
-		case 8:
+		case opt_test_brute_tree:
 		{
 			performance_test(opt);
 
 			break;
 		}
-		case 9:
+		case opt_test_branch_and_bound:
 		{
 			performance_test(opt);
 
