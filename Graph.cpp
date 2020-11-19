@@ -8,7 +8,6 @@ Graph::Graph(int nodes_count)
 		throw "Error: Nodes count cannot be less than 0";
 
 	nodesCount = nodes_count;
-
 	adjacencyMatrix = new SquareMatrix(nodes_count);
 }
 

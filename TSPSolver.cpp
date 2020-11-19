@@ -17,22 +17,11 @@ TSPSolver::TSPSolver(Graph* graph, int node)
 
 	visited = new bool[nodes_count + 1];
 	memset(visited, false, (nodes_count + 1) * sizeof(bool));
-
-	orders = new int* [nodes_count];
-	for (int i = 0; i < nodes_count; i++)
-		orders[i] = new int[nodes_count];
-
-	getAscendingOrders();
 }
 
 TSPSolver::~TSPSolver()
 {
 	delete[] bestPath;
-	
-	for (int i = 0; i < graph->getNodesCount(); i++)
-		delete[] orders[i];
-
-	delete[] orders;
 }
 
 int TSPSolver::getBestPathWeight()
@@ -62,6 +51,8 @@ void TSPSolver::solveBruteForce()
 	int weight;
 	int nodes_count = this->graph->getNodesCount();
 
+	bestPathWeight = INT_MAX;
+
 	int* path = new int[nodes_count + 1];
 	setFirstPermutation(path);
 
@@ -84,66 +75,13 @@ void TSPSolver::solveBruteForce()
 	delete[] path;
 }
 
-
-int TSPSolver::partition(int* arr, int* order, int p, int q)
+int TSPSolver::startBound(int* min_1, int* min_2)
 {
-	int i = (p - 1);
-	int pivot = arr[q];
-
-	for (int j = p; j <= q - 1; j++)
-	{
-		if (arr[j] < pivot)
-		{
-			i++;
-			std::swap(arr[i], arr[j]);
-			std::swap(order[i], order[j]);
-		}
-	}
-	std::swap(arr[i + 1], arr[q]);
-	std::swap(order[i + 1], order[q]);
-
-	return (i + 1);
-}
-
-
-void TSPSolver::quickSort(int* arr, int* order, int p, int q)
-{
-	if (p < q)
-	{
-		int index = partition(arr, order, p, q);
-
-		quickSort(arr, order, 0, index - 1);
-		quickSort(arr, order, index + 1, q);
-	}
-}
-
-// Sorts each row in matrix and creates an array including ordered indexes of elements sorted by value.
-// So if after execution we have order[i] = [3, 0, 2, 1], then matrix[i][3] is the smallest, matrix[i][0] is the second smallest, etc.
-void TSPSolver::getAscendingOrders()
-{
-	SquareMatrix tmp_matrix = SquareMatrix(*graph->getAdjacencyMatrix());
-
-	for (int i = 0; i < tmp_matrix.getSize(); i++)
-		for (int j = 0; j < tmp_matrix.getSize(); j++)
-			orders[i][j] = j;
-
-	for (int i = 0; i < tmp_matrix.getSize(); i++)
-	{
-		quickSort(tmp_matrix[i], orders[i], 0, tmp_matrix.getSize() - 1);
-	}
-}
-
-int TSPSolver::startBound(int** orders)
-{
-	SquareMatrix matrix = *graph->getAdjacencyMatrix();
-
 	int bound = 0;
 	
-	for (int i = 0; i < matrix.getSize(); i++)
+	for (int i = 0; i < graph->getNodesCount(); i++)
 	{
-		int* row = matrix[i];
-
-		bound += row[orders[i][1]] + row[orders[i][2]];
+		bound += min_1[i] + min_2[i];
 	}
 
 	if (bound % 2 == 1)
@@ -153,39 +91,8 @@ int TSPSolver::startBound(int** orders)
 	return bound;
 }
 
-int TSPSolver::firstMin(int row)
-{
-	SquareMatrix* matrix = graph->getAdjacencyMatrix();
 
-	int min = INT_MAX;
-	for (int k = 0; k < graph->getNodesCount(); k++)
-		if ((*matrix)[row][k] < min && row != k)
-			min = (*matrix)[row][k];
-	return min;
-}
-
-int TSPSolver::secondMin(int row)
-{
-	int first = INT_MAX, second = INT_MAX;
-	SquareMatrix* matrix = graph->getAdjacencyMatrix();
-	for (int j = 0; j < graph->getNodesCount(); j++)
-	{
-		if (row == j)
-			continue;
-
-		if ((*matrix)[row][j] <= first)
-		{
-			second = first;
-			first = (*matrix)[row][j];
-		}
-		else if ((*matrix)[row][j] <= second &&
-			(*matrix)[row][j] != first)
-			second = (*matrix)[row][j];
-	}
-	return second;
-}
-
-void TSPSolver::branchAndBoundRecursive(int level, int* path, int weight, int bound)
+void TSPSolver::branchAndBoundRecursive(int level, int* path, int weight, int bound, int* min_1, int* min_2)
 {
 	SquareMatrix* matrix = graph->getAdjacencyMatrix();
 
@@ -210,16 +117,16 @@ void TSPSolver::branchAndBoundRecursive(int level, int* path, int weight, int bo
 			weight += (*matrix)[path[level - 1]][i];
 
 			if (level == 1)
-				bound -= ((firstMin(path[level - 1]) + firstMin(i)) / 2);
+				bound -= ((min_1[path[level - 1]] + min_1[i]) / 2);
 			else
-				bound -= ((secondMin(path[level - 1]) + firstMin(i)) / 2);
+				bound -= ((min_2[path[level - 1]] + min_1[i]) / 2);
 
 			if (bound + weight < bestPathWeight)
 			{
 				path[level] = i;
 				visited[i] = true;
 
-				branchAndBoundRecursive(level + 1, path, weight, bound);
+				branchAndBoundRecursive(level + 1, path, weight, bound, min_1, min_2);
 			}
 
 			weight -= (*matrix)[path[level - 1]][i];
@@ -236,6 +143,31 @@ void TSPSolver::branchAndBoundRecursive(int level, int* path, int weight, int bo
 	}
 }
 
+void TSPSolver::fillMin(int* min_1, int* min_2)
+{
+	SquareMatrix* matrix = graph->getAdjacencyMatrix();
+
+	for (int node = 0; node < graph->getNodesCount(); node++)
+	{
+		min_1[node] = INT_MAX, min_2[node] = INT_MAX;
+		
+		for (int j = 0; j < graph->getNodesCount(); j++)
+		{
+			if (node == j)
+				continue;
+
+			if ((*matrix)[node][j] <= min_1[node])
+			{
+				min_2[node] = min_1[node];
+				min_1[node] = (*matrix)[node][j];
+			}
+			else if ((*matrix)[node][j] <= min_2[node] &&
+				(*matrix)[node][j] != min_1[node])
+				min_2[node] = (*matrix)[node][j];
+		}
+	}
+}
+
 void TSPSolver::solveBranchAndBound()
 {
 	SquareMatrix* matrix = graph->getAdjacencyMatrix();
@@ -244,10 +176,87 @@ void TSPSolver::solveBranchAndBound()
 	int* path = new int[nodes_count + 1];
 	memset(path, -1, sizeof(int) * (nodes_count + 1));
 
-	int bound = startBound(orders);
+	bestPathWeight = INT_MAX;
 
-	path[0] = 0;
-	visited[0] = true;
+	memset(visited, false, (matrix->getSize() + 1) * sizeof(bool));
 
-	branchAndBoundRecursive(1, path, 0, bound);
+	int* min_1 = new int[nodes_count];
+	int* min_2 = new int[nodes_count];
+
+	fillMin(min_1, min_2);
+
+	int bound = startBound(min_1, min_2);
+
+	path[0] = startNode;
+	visited[startNode] = true;
+
+	branchAndBoundRecursive(1, path, 0, bound, min_1, min_2);
+}
+
+
+void TSPSolver::solveBruteForceSearchTree()
+{
+	std::vector<int> path;
+	path.push_back(startNode);
+
+	bestPathWeight = INT_MAX;
+
+	memset(visited, false, (graph->getNodesCount() + 1) * sizeof(bool));
+
+	visited[startNode] = true;
+	//
+
+	solveBruteForceSearchTreeRecursive(path);
+}
+
+// Let's consider the tree, which contains all possible paths in our graph.
+// This function is based on the recursive deep search of such a tree.
+// The path vector must contain the start node number.
+void TSPSolver::solveBruteForceSearchTreeRecursive(std::vector<int> path)
+{
+	SquareMatrix* matrix = graph->getAdjacencyMatrix();
+
+	if (path.size() < graph->getNodesCount())
+	{
+		for (int i = 0; i < graph->getNodesCount(); i++)
+		{
+			if (!visited[i])
+			{
+				path.push_back(i);
+				visited[i] = true;
+
+				solveBruteForceSearchTreeRecursive(path);
+
+				visited[i] = false;
+				path.pop_back();
+			}
+		}
+	}
+	else if ((*matrix)[path.back()][path.front()] > 0) {
+		path.push_back(path.front());
+
+		int path_weight = 0;
+
+		for (int i = 0; i < path.size() - 1; i++)
+		{
+			path_weight += (*matrix)[path[i]][path[i + 1]];
+		}
+
+		if (bestPathWeight == INT_MAX || path_weight < bestPathWeight)
+		{
+			for (int i = 0; i < matrix->getSize(); i++)
+				bestPath[i] = path[i];
+
+			bestPathWeight = path_weight;
+		}
+
+		path.pop_back();
+
+		return;
+	}
+}
+
+int* TSPSolver::getBestPath()
+{
+	return bestPath;
 }
