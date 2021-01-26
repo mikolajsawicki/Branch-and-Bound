@@ -1,5 +1,3 @@
-# Travelling-salesman-problem
+# Branch-and-Bound
 
-Solved using Branch & Bound algorithm.
-The cost function:
-http://lcm.csa.iisc.ernet.in/dsa/node187.html
+TSP solved using Branch & Bound algorithm.
